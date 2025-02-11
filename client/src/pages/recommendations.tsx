@@ -40,15 +40,17 @@ export default function Recommendations() {
     if (!mood) {
       setLocation("/");
     }
-  }, [mood, setLocation]);
+  }, [mood]); // Removed setLocation from dependencies
 
-  if (error) {
-    toast({
-      title: "Error loading books",
-      description: "Failed to load book recommendations. Please try again.",
-      variant: "destructive"
-    });
-  }
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error loading books",
+        description: "Failed to load book recommendations. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   const handleHide = async (bookId: string) => {
     try {
