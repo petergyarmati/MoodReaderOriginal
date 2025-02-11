@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import MoodButton from "@/components/mood-button";
 import MoodQuiz from "@/components/mood-quiz";
 import type { Mood } from "@shared/schema";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, BookOpen } from "lucide-react";
 import { useState } from "react";
 
 export default function Home() {
@@ -44,7 +44,7 @@ export default function Home() {
                   />
                 ))}
               </div>
-              <div className="mt-8 flex justify-center">
+              <div className="mt-8 flex flex-col items-center gap-4">
                 <Button 
                   variant="ghost" 
                   onClick={() => setShowQuiz(true)}
@@ -52,6 +52,14 @@ export default function Home() {
                 >
                   <HelpCircle className="mr-2 h-4 w-4" />
                   Not sure? Take a quick quiz
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setLocation("/genre-test")}
+                  className="text-muted-foreground"
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Discover your perfect book genres
                 </Button>
               </div>
             </>

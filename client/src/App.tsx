@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Home from "@/pages/home";
 import Recommendations from "@/pages/recommendations";
+import GenreTest from "@/pages/genre-test";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -11,6 +12,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/recommendations/:mood" component={Recommendations} />
+      <Route path="/genre-test" component={GenreTest} />
       <Route component={NotFound} />
     </Switch>
   );
