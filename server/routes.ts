@@ -21,15 +21,14 @@ export function registerRoutes(app: Express): Server {
         Uplifting: "inspirational heartwarming positive"
       }[mood];
 
-      console.log(`Using search terms: ${searchTerms}`);
-      const response = await fetch(
-        `${GOOGLE_BOOKS_API}?q=${encodeURIComponent(searchTerms)}&maxResults=40&printType=books&langRestrict=en&fields=items(id,volumeInfo(title,authors,description,imageLinks/thumbnail,industryIdentifiers))`,
-        {
-          headers: {
-            'Accept': 'application/json'
-          }
+      const apiUrl = `${GOOGLE_BOOKS_API}?q=${encodeURIComponent(searchTerms)}&maxResults=40&printType=books&langRestrict=en&fields=items(id,volumeInfo(title,authors,description,imageLinks/thumbnail,industryIdentifiers))`;
+      console.log(`Making request to Google Books API: ${apiUrl}`);
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Accept': 'application/json'
         }
-      );
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -41,7 +40,7 @@ export function registerRoutes(app: Express): Server {
       console.log(`Retrieved ${data.items?.length ?? 0} books from Google Books API`);
 
       if (!data.items || !Array.isArray(data.items)) {
-        console.error('Invalid response from Google Books API:', data);
+        console.error('Invalid response from Google Books API:', JSON.stringify(data));
         throw new Error('Invalid response from Google Books API');
       }
 
@@ -67,7 +66,11 @@ export function registerRoutes(app: Express): Server {
       const result = await storage.addHiddenBook(book);
       res.json(result);
     } catch (error) {
-      res.status(400).json({ message: "Invalid request" });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request body" });
+      } else {
+        res.status(500).json({ message: "Server error" });
+      }
     }
   });
 
