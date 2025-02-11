@@ -7,6 +7,7 @@ import BookCard from "@/components/book-card";
 import { hideBook } from "@/lib/api";
 import { ChevronLeft, ChevronRight, Edit2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import type { Mood } from "@shared/schema";
 
 interface Book {
   id: string;
@@ -25,14 +26,14 @@ interface Book {
 }
 
 export default function Recommendations() {
-  const { mood } = useParams();
+  const { mood } = useParams<{ mood: Mood }>();
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const [currentIndex, setCurrentIndex] = useState(0);
   const queryClient = useQueryClient();
 
   const { data: books = [], isLoading, error } = useQuery<Book[]>({
-    queryKey: ["/api/books", mood],
+    queryKey: [`/api/books/${mood}`],
     enabled: !!mood
   });
 
@@ -40,7 +41,7 @@ export default function Recommendations() {
     if (!mood) {
       setLocation("/");
     }
-  }, [mood]); // Removed setLocation from dependencies
+  }, [mood]); 
 
   useEffect(() => {
     if (error) {
@@ -49,13 +50,15 @@ export default function Recommendations() {
         description: "Failed to load book recommendations. Please try again.",
         variant: "destructive"
       });
+      console.error("Book loading error:", error);
     }
   }, [error, toast]);
 
   const handleHide = async (bookId: string) => {
+    if (!mood) return;
     try {
       await hideBook({ bookId, mood });
-      await queryClient.invalidateQueries({ queryKey: ["/api/books", mood] });
+      await queryClient.invalidateQueries({ queryKey: [`/api/books/${mood}`] });
       toast({ title: "Book hidden from future recommendations" });
     } catch (error) {
       toast({ 
