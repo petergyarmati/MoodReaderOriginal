@@ -11,6 +11,7 @@ import type { Mood } from "@shared/schema";
 
 interface Book {
   id: string;
+  relevanceScore: number;
   volumeInfo: {
     title: string;
     authors?: string[];
@@ -22,6 +23,8 @@ interface Book {
       type: string;
       identifier: string;
     }>;
+    averageRating?: number;
+    ratingsCount?: number;
   };
 }
 
@@ -34,7 +37,7 @@ export default function Recommendations() {
 
   const { data: books = [], isLoading, error } = useQuery<Book[]>({
     queryKey: [`/api/books/${mood}`],
-    enabled: !!mood
+    enabled: !!mood,
   });
 
   useEffect(() => {
@@ -69,12 +72,18 @@ export default function Recommendations() {
   };
 
   const currentBook = books[currentIndex];
+  const totalBooks = books.length;
 
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">{mood} Books</h1>
+          <div>
+            <h1 className="text-3xl font-bold">{mood} Books</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Showing {currentIndex + 1} of {totalBooks} recommendations
+            </p>
+          </div>
           <Button
             variant="outline"
             onClick={() => setLocation("/")}
@@ -91,6 +100,7 @@ export default function Recommendations() {
             <BookCard
               book={currentBook}
               onHide={() => handleHide(currentBook.id)}
+              relevanceScore={currentBook.relevanceScore}
             />
             <div className="flex justify-center gap-4 mt-6">
               <Button
