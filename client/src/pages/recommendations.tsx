@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import BookCard from "@/components/book-card";
 import { hideBook } from "@/lib/api";
 import { ChevronLeft, ChevronRight, Edit2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Book {
   id: string;
@@ -36,10 +36,11 @@ export default function Recommendations() {
     enabled: !!mood
   });
 
-  if (!mood) {
-    setLocation("/");
-    return null;
-  }
+  useEffect(() => {
+    if (!mood) {
+      setLocation("/");
+    }
+  }, [mood, setLocation]);
 
   if (error) {
     toast({
