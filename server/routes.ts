@@ -10,8 +10,9 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/books/:mood", async (req, res) => {
     try {
       const mood = moodSchema.parse(req.params.mood);
+      console.log(`Fetching books for mood: ${mood}`);
       const hiddenBooks = await storage.getHiddenBooks(mood);
-      
+
       const searchTerms = {
         Exciting: "adventure action thriller",
         Relaxing: "cozy comfort peaceful",
@@ -20,22 +21,34 @@ export function registerRoutes(app: Express): Server {
         Uplifting: "inspirational heartwarming positive"
       }[mood];
 
+      console.log(`Using search terms: ${searchTerms}`);
       const response = await fetch(
-        `${GOOGLE_BOOKS_API}?q=${encodeURIComponent(searchTerms)}&maxResults=40`
+        `${GOOGLE_BOOKS_API}?q=${encodeURIComponent(searchTerms)}&maxResults=40&printType=books&langRestrict=en`
       );
-      
+
       if (!response.ok) {
-        throw new Error("Failed to fetch from Google Books API");
+        const errorText = await response.text();
+        console.error(`Google Books API error: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to fetch from Google Books API: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log(`Retrieved ${data.items?.length ?? 0} books from Google Books API`);
+
+      if (!data.items || !Array.isArray(data.items)) {
+        console.error('Invalid response from Google Books API:', data);
+        throw new Error('Invalid response from Google Books API');
+      }
+
       const books = data.items.filter(
-        (book: any) => !hiddenBooks.includes(book.id)
+        (book: any) => !hiddenBooks.includes(book.id) && book.volumeInfo?.title
       );
 
+      console.log(`Returning ${books.length} books after filtering`);
       res.json(books);
     } catch (error) {
-      res.status(400).json({ message: "Invalid request" });
+      console.error('Error in /api/books/:mood:', error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Invalid request" });
     }
   });
 
