@@ -8,6 +8,22 @@ import { hideBook } from "@/lib/api";
 import { ChevronLeft, ChevronRight, Edit2 } from "lucide-react";
 import { useState } from "react";
 
+interface Book {
+  id: string;
+  volumeInfo: {
+    title: string;
+    authors?: string[];
+    description?: string;
+    imageLinks?: {
+      thumbnail: string;
+    };
+    industryIdentifiers?: Array<{
+      type: string;
+      identifier: string;
+    }>;
+  };
+}
+
 export default function Recommendations() {
   const { mood } = useParams();
   const [_, setLocation] = useLocation();
@@ -15,7 +31,7 @@ export default function Recommendations() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const queryClient = useQueryClient();
 
-  const { data: books = [], isLoading } = useQuery({
+  const { data: books = [], isLoading, error } = useQuery<Book[]>({
     queryKey: ["/api/books", mood],
     enabled: !!mood
   });
@@ -23,6 +39,14 @@ export default function Recommendations() {
   if (!mood) {
     setLocation("/");
     return null;
+  }
+
+  if (error) {
+    toast({
+      title: "Error loading books",
+      description: "Failed to load book recommendations. Please try again.",
+      variant: "destructive"
+    });
   }
 
   const handleHide = async (bookId: string) => {

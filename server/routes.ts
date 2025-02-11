@@ -23,7 +23,12 @@ export function registerRoutes(app: Express): Server {
 
       console.log(`Using search terms: ${searchTerms}`);
       const response = await fetch(
-        `${GOOGLE_BOOKS_API}?q=${encodeURIComponent(searchTerms)}&maxResults=40&printType=books&langRestrict=en`
+        `${GOOGLE_BOOKS_API}?q=${encodeURIComponent(searchTerms)}&maxResults=40&printType=books&langRestrict=en&fields=items(id,volumeInfo(title,authors,description,imageLinks/thumbnail,industryIdentifiers))`,
+        {
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
       );
 
       if (!response.ok) {
@@ -48,7 +53,11 @@ export function registerRoutes(app: Express): Server {
       res.json(books);
     } catch (error) {
       console.error('Error in /api/books/:mood:', error);
-      res.status(400).json({ message: error instanceof Error ? error.message : "Invalid request" });
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid mood parameter" });
+      } else {
+        res.status(500).json({ message: error instanceof Error ? error.message : "Server error" });
+      }
     }
   });
 
